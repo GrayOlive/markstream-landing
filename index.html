@@ -1,0 +1,1177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>MarkStream — AI Assessment for the Modern University</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --midnight: #0c0f1a;
+    --navy: #111827;
+    --navy-soft: #1a2236;
+    --amber: oklch(0.68 0.18 145);
+    --amber-light: oklch(0.78 0.18 145);
+    --amber-dim: oklch(0.45 0.18 145 / 0.12);
+    --cream: #f2ede4;
+    --cream-dim: rgba(242,237,228,0.65);
+    --muted: rgba(242,237,228,0.35);
+    --border: oklch(0.45 0.18 145 / 0.35);
+    --border-soft: rgba(242,237,228,0.08);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--midnight);
+    color: var(--cream);
+    font-family: 'DM Mono', monospace;
+    font-size: 15px;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* NOISE TEXTURE */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.5;
+  }
+
+  /* NAV */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.4rem 4rem;
+    background: rgba(12,15,26,0.85);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border-soft);
+  }
+
+  .nav-logo {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.5rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    color: var(--cream);
+    text-decoration: none;
+  }
+
+  .nav-logo span { color: var(--amber); }
+
+  .nav-links {
+    display: flex;
+    gap: 2.5rem;
+    list-style: none;
+  }
+
+  .nav-links a {
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    transition: color 0.2s;
+  }
+
+  .nav-links a:hover { color: var(--cream); }
+
+  .nav-cta {
+    background: var(--amber);
+    color: var(--midnight) !important;
+    padding: 0.55rem 1.4rem;
+    font-weight: 500;
+    transition: background 0.2s !important;
+  }
+
+  .nav-cta:hover { background: var(--amber-light) !important; }
+
+  /* HERO */
+  .hero {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 10rem 4rem 6rem;
+    overflow: hidden;
+  }
+
+  .hero-grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(oklch(0.45 0.18 145 / 0.04) 1px, transparent 1px),
+      linear-gradient(90deg, oklch(0.45 0.18 145 / 0.04) 1px, transparent 1px);
+    background-size: 60px 60px;
+  }
+
+  .hero-glow {
+    position: absolute;
+    width: 700px;
+    height: 700px;
+    border-radius: 50%;
+    background: radial-gradient(circle, oklch(0.45 0.18 145 / 0.07) 0%, transparent 70%);
+    right: -100px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+  }
+
+  .hero-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: 0.7rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--amber);
+    margin-bottom: 2rem;
+    opacity: 0;
+    animation: fadeUp 0.7s ease 0.2s forwards;
+  }
+
+  .hero-eyebrow::before {
+    content: '';
+    display: block;
+    width: 28px;
+    height: 1px;
+    background: var(--amber);
+  }
+
+  .hero h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(3.5rem, 7vw, 6.5rem);
+    font-weight: 300;
+    line-height: 1.05;
+    letter-spacing: -0.01em;
+    max-width: 820px;
+    opacity: 0;
+    animation: fadeUp 0.8s ease 0.35s forwards;
+  }
+
+  .hero h1 em {
+    font-style: italic;
+    color: var(--amber);
+  }
+
+  .hero-sub {
+    margin-top: 2rem;
+    max-width: 520px;
+    color: var(--cream-dim);
+    font-size: 0.88rem;
+    line-height: 1.8;
+    opacity: 0;
+    animation: fadeUp 0.8s ease 0.5s forwards;
+  }
+
+  .hero-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 3rem;
+    opacity: 0;
+    animation: fadeUp 0.8s ease 0.65s forwards;
+  }
+
+  .btn-primary {
+    background: var(--amber);
+    color: var(--midnight);
+    border: none;
+    padding: 0.9rem 2.2rem;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.78rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+    transition: background 0.2s, transform 0.15s;
+  }
+
+  .btn-primary:hover { background: var(--amber-light); transform: translateY(-1px); }
+
+  .btn-secondary {
+    background: transparent;
+    color: var(--cream-dim);
+    border: 1px solid var(--border-soft);
+    padding: 0.9rem 2.2rem;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.78rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+    transition: border-color 0.2s, color 0.2s;
+  }
+
+  .btn-secondary:hover { border-color: var(--amber); color: var(--amber); }
+
+  /* STATS STRIP */
+  .stats-strip {
+    display: flex;
+    gap: 0;
+    border-top: 1px solid var(--border-soft);
+    border-bottom: 1px solid var(--border-soft);
+    margin: 0 4rem;
+    opacity: 0;
+    animation: fadeUp 0.8s ease 0.8s forwards;
+  }
+
+  .stat {
+    flex: 1;
+    padding: 2rem 2.5rem;
+    border-right: 1px solid var(--border-soft);
+  }
+
+  .stat:last-child { border-right: none; }
+
+  .stat-num {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2.8rem;
+    font-weight: 300;
+    color: var(--amber);
+    line-height: 1;
+  }
+
+  .stat-label {
+    font-size: 0.68rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-top: 0.4rem;
+  }
+
+  /* PROBLEM / SECTION STYLES */
+  section {
+    position: relative;
+    padding: 7rem 4rem;
+  }
+
+  .section-label {
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--amber);
+    margin-bottom: 1rem;
+  }
+
+  .section-label::before {
+    content: '// ';
+    opacity: 0.5;
+  }
+
+  h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(2rem, 4vw, 3.2rem);
+    font-weight: 300;
+    line-height: 1.15;
+    max-width: 700px;
+  }
+
+  h2 em {
+    font-style: italic;
+    color: var(--amber);
+  }
+
+  /* PROBLEM SECTION */
+  .problem {
+    background: var(--navy);
+    border-top: 1px solid var(--border-soft);
+    border-bottom: 1px solid var(--border-soft);
+  }
+
+  .problem-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6rem;
+    align-items: center;
+    margin-top: 4rem;
+  }
+
+  .problem-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .problem-card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border-soft);
+    padding: 1.5rem 1.8rem;
+    display: flex;
+    gap: 1.2rem;
+    align-items: flex-start;
+    transition: border-color 0.2s;
+  }
+
+  .problem-card:hover { border-color: var(--border); }
+
+  .problem-icon {
+    font-size: 1.2rem;
+    flex-shrink: 0;
+    margin-top: 0.1rem;
+  }
+
+  .problem-card h4 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.1rem;
+    font-weight: 400;
+    margin-bottom: 0.3rem;
+  }
+
+  .problem-card p {
+    font-size: 0.78rem;
+    color: var(--cream-dim);
+    line-height: 1.7;
+  }
+
+  .problem-quote {
+    padding: 2.5rem;
+    border-left: 2px solid var(--amber);
+    background: var(--amber-dim);
+  }
+
+  .problem-quote blockquote {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.5rem;
+    font-style: italic;
+    font-weight: 300;
+    line-height: 1.5;
+    color: var(--cream);
+    margin-bottom: 1.2rem;
+  }
+
+  .problem-quote cite {
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--amber);
+    font-style: normal;
+  }
+
+  /* HOW IT WORKS */
+  .steps {
+    counter-reset: step;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0;
+    margin-top: 5rem;
+    border: 1px solid var(--border-soft);
+  }
+
+  .step {
+    counter-increment: step;
+    padding: 2.5rem 2rem;
+    border-right: 1px solid var(--border-soft);
+    position: relative;
+    transition: background 0.25s;
+  }
+
+  .step:last-child { border-right: none; }
+
+  .step:hover { background: oklch(0.45 0.18 145 / 0.04); }
+
+  .step-num {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 3.5rem;
+    font-weight: 300;
+    color: var(--border);
+    line-height: 1;
+    margin-bottom: 1.2rem;
+    transition: color 0.25s;
+  }
+
+  .step:hover .step-num { color: var(--amber); }
+
+  .step h3 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.2rem;
+    font-weight: 400;
+    margin-bottom: 0.6rem;
+  }
+
+  .step p {
+    font-size: 0.77rem;
+    color: var(--cream-dim);
+    line-height: 1.7;
+  }
+
+  /* FEATURES */
+  .features-bg {
+    background: var(--navy);
+    border-top: 1px solid var(--border-soft);
+    border-bottom: 1px solid var(--border-soft);
+  }
+
+  .features-intro {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8rem;
+    align-items: end;
+    margin-bottom: 4rem;
+  }
+
+  .features-intro p {
+    font-size: 0.83rem;
+    color: var(--cream-dim);
+    line-height: 1.85;
+    align-self: end;
+  }
+
+  .feature-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--border-soft);
+  }
+
+  .feature-card {
+    background: var(--navy);
+    padding: 2.5rem;
+    transition: background 0.25s;
+  }
+
+  .feature-card:hover { background: var(--navy-soft); }
+
+  .feature-badge {
+    display: inline-block;
+    font-size: 0.6rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--midnight);
+    background: var(--amber);
+    padding: 0.2rem 0.6rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .feature-card h3 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.3rem;
+    font-weight: 400;
+    line-height: 1.3;
+    margin-bottom: 0.8rem;
+  }
+
+  .feature-card p {
+    font-size: 0.77rem;
+    color: var(--cream-dim);
+    line-height: 1.75;
+  }
+
+  /* DEMO WINDOW */
+  .demo-section {
+    padding: 7rem 4rem;
+  }
+
+  .demo-window {
+    margin-top: 4rem;
+    border: 1px solid var(--border);
+    overflow: hidden;
+  }
+
+  .demo-bar {
+    background: var(--navy-soft);
+    border-bottom: 1px solid var(--border-soft);
+    padding: 0.8rem 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .demo-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--border-soft);
+  }
+
+  .demo-url {
+    margin-left: 0.8rem;
+    font-size: 0.68rem;
+    color: var(--muted);
+    letter-spacing: 0.06em;
+  }
+
+  .demo-body {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .demo-submission {
+    padding: 2.5rem;
+    border-right: 1px solid var(--border-soft);
+    background: rgba(255,255,255,0.01);
+  }
+
+  .demo-label {
+    font-size: 0.62rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 1rem;
+  }
+
+  .demo-text {
+    font-family: 'Libre Baskerville', serif;
+    font-size: 0.82rem;
+    line-height: 1.85;
+    color: var(--cream-dim);
+  }
+
+  .demo-highlight {
+    background: rgba(232,168,56,0.15);
+    border-bottom: 1px solid var(--amber);
+    color: var(--cream);
+  }
+
+  .demo-result {
+    padding: 2.5rem;
+  }
+
+  .score-display {
+    display: flex;
+    align-items: baseline;
+    gap: 0.4rem;
+    margin-bottom: 2rem;
+  }
+
+  .score-big {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 4rem;
+    font-weight: 300;
+    color: var(--amber);
+    line-height: 1;
+  }
+
+  .score-meta {
+    font-size: 0.7rem;
+    color: var(--muted);
+  }
+
+  .rubric-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.7rem 0;
+    border-bottom: 1px solid var(--border-soft);
+    font-size: 0.76rem;
+  }
+
+  .rubric-item:last-child { border-bottom: none; }
+
+  .rubric-score {
+    color: var(--amber);
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1rem;
+  }
+
+  .feedback-box {
+    margin-top: 1.5rem;
+    background: var(--amber-dim);
+    border-left: 2px solid var(--amber);
+    padding: 1rem 1.2rem;
+    font-size: 0.76rem;
+    color: var(--cream-dim);
+    line-height: 1.7;
+  }
+
+  .typing-cursor {
+    display: inline-block;
+    width: 2px;
+    height: 0.85em;
+    background: var(--amber);
+    margin-left: 2px;
+    animation: blink 1s step-end infinite;
+    vertical-align: text-bottom;
+  }
+
+  /* TESTIMONIALS */
+  .testimonials {
+    background: var(--navy);
+    border-top: 1px solid var(--border-soft);
+    border-bottom: 1px solid var(--border-soft);
+  }
+
+  .testi-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+    margin-top: 4rem;
+  }
+
+  .testi-card {
+    border: 1px solid var(--border-soft);
+    padding: 2.2rem;
+    transition: border-color 0.25s;
+  }
+
+  .testi-card:hover { border-color: var(--border); }
+
+  .testi-card blockquote {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.05rem;
+    font-style: italic;
+    line-height: 1.6;
+    color: var(--cream);
+    margin-bottom: 1.5rem;
+  }
+
+  .testi-author {
+    font-size: 0.68rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .testi-author strong {
+    display: block;
+    color: var(--amber);
+    letter-spacing: 0.05em;
+    margin-bottom: 0.1rem;
+    font-weight: 500;
+  }
+
+  /* PRICING */
+  .pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    margin-top: 4rem;
+  }
+
+  .price-card {
+    border: 1px solid var(--border-soft);
+    padding: 2.5rem;
+    position: relative;
+    transition: border-color 0.25s;
+  }
+
+  .price-card:hover { border-color: var(--border); }
+
+  .price-card.featured {
+    border-color: var(--amber);
+    background: var(--amber-dim);
+  }
+
+  .price-tag {
+    font-size: 0.62rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--amber);
+    margin-bottom: 1.2rem;
+  }
+
+  .price-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.6rem;
+    font-weight: 300;
+    margin-bottom: 0.5rem;
+  }
+
+  .price-amount {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2.5rem;
+    font-weight: 300;
+    color: var(--amber);
+    line-height: 1;
+    margin-bottom: 0.3rem;
+  }
+
+  .price-period {
+    font-size: 0.7rem;
+    color: var(--muted);
+    margin-bottom: 2rem;
+  }
+
+  .price-features {
+    list-style: none;
+    margin-bottom: 2.5rem;
+  }
+
+  .price-features li {
+    font-size: 0.78rem;
+    color: var(--cream-dim);
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--border-soft);
+    display: flex;
+    gap: 0.6rem;
+    align-items: center;
+  }
+
+  .price-features li::before {
+    content: '→';
+    color: var(--amber);
+    flex-shrink: 0;
+    font-size: 0.7rem;
+  }
+
+  /* CTA SECTION */
+  .cta-section {
+    text-align: center;
+    padding: 9rem 4rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .cta-section::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 60% 60% at 50% 50%, oklch(0.45 0.18 145 / 0.06) 0%, transparent 70%);
+  }
+
+  .cta-section h2 {
+    max-width: 600px;
+    margin: 0 auto 1.5rem;
+    font-size: clamp(2.2rem, 4vw, 3.5rem);
+  }
+
+  .cta-section p {
+    max-width: 420px;
+    margin: 0 auto 3rem;
+    font-size: 0.83rem;
+    color: var(--cream-dim);
+    line-height: 1.8;
+  }
+
+  /* FOOTER */
+  footer {
+    border-top: 1px solid var(--border-soft);
+    padding: 3rem 4rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  footer .footer-logo {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.2rem;
+    color: var(--cream);
+  }
+
+  footer .footer-logo span { color: var(--amber); }
+
+  footer p {
+    font-size: 0.68rem;
+    color: var(--muted);
+    letter-spacing: 0.06em;
+  }
+
+  /* ANIMATIONS */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+  }
+
+  /* SCROLL REVEAL */
+  .reveal {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .reveal-delay-1 { transition-delay: 0.1s; }
+  .reveal-delay-2 { transition-delay: 0.2s; }
+  .reveal-delay-3 { transition-delay: 0.3s; }
+
+  /* PROGRESS BAR */
+  .progress-bar {
+    height: 3px;
+    background: var(--border-soft);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-top: 0.5rem;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: var(--amber);
+    border-radius: 2px;
+    animation: fillBar 2s ease 1.5s forwards;
+    width: 0;
+  }
+
+  @keyframes fillBar {
+    to { width: var(--target-width); }
+  }
+
+  /* ── RESPONSIVE ───────────────────────────────────── */
+
+  @media (max-width: 1024px) {
+    nav { padding: 1.2rem 2rem; }
+    .nav-links { gap: 1.5rem; }
+
+    .hero { padding: 9rem 2rem 5rem; }
+    .stats-strip { margin: 0 2rem; flex-wrap: wrap; }
+    .stat { flex: 1 1 45%; border-right: none; border-bottom: 1px solid var(--border-soft); }
+    .stat:nth-child(odd) { border-right: 1px solid var(--border-soft); }
+
+    section { padding: 5rem 2rem; }
+    .demo-section { padding: 5rem 2rem; }
+
+    .problem-grid { grid-template-columns: 1fr; gap: 3rem; }
+
+    .steps { grid-template-columns: repeat(2, 1fr); }
+    .step:nth-child(2) { border-right: none; }
+    .step:nth-child(3) { border-top: 1px solid var(--border-soft); }
+    .step:nth-child(4) { border-top: 1px solid var(--border-soft); border-right: none; }
+
+    .features-intro { grid-template-columns: 1fr; gap: 1.5rem; }
+    .feature-grid { grid-template-columns: repeat(2, 1fr); }
+
+    .demo-body { grid-template-columns: 1fr; }
+    .demo-submission { border-right: none; border-bottom: 1px solid var(--border-soft); }
+
+    .testi-grid { grid-template-columns: 1fr 1fr; }
+    .testi-grid .testi-card:last-child { grid-column: 1 / -1; }
+
+    .pricing-grid { grid-template-columns: 1fr; max-width: 500px; }
+
+    footer { flex-direction: column; gap: 1rem; text-align: center; padding: 2.5rem 2rem; }
+  }
+
+  @media (max-width: 767px) {
+    nav { padding: 1rem 1.5rem; }
+    .nav-links { display: none; }
+
+    .hero { padding: 7rem 1.5rem 4rem; }
+    .hero h1 { font-size: clamp(2.6rem, 10vw, 3.5rem); }
+    .hero-actions { flex-direction: column; align-items: flex-start; }
+    .hero-glow { width: 280px; height: 280px; }
+
+    .stats-strip { margin: 0 1.5rem; flex-direction: column; }
+    .stat { border-right: none !important; border-bottom: 1px solid var(--border-soft); }
+    .stat:last-child { border-bottom: none; }
+
+    section { padding: 4rem 1.5rem; }
+    .demo-section { padding: 4rem 1.5rem; }
+    .cta-section { padding: 5rem 1.5rem; }
+
+    .steps { grid-template-columns: 1fr; }
+    .step { border-right: none !important; border-bottom: 1px solid var(--border-soft); }
+    .step:last-child { border-bottom: none; }
+
+    .feature-grid { grid-template-columns: 1fr; }
+
+    .testi-grid { grid-template-columns: 1fr; }
+    .testi-grid .testi-card:last-child { grid-column: auto; }
+
+    .pricing-grid { grid-template-columns: 1fr; max-width: 100%; }
+
+    .demo-bar .demo-url { display: none; }
+
+    .cta-section .hero-actions {
+      justify-content: center;
+      flex-direction: column;
+      align-items: center;
+      opacity: 1;
+    }
+    .cta-section .btn-primary,
+    .cta-section .btn-secondary { width: 100%; text-align: center; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-logo">Mark<span>Stream</span></a>
+  <ul class="nav-links">
+    <li><a href="#how-it-works">How it Works</a></li>
+    <li><a href="#features">Features</a></li>
+    <li><a href="#pricing">Pricing</a></li>
+    <li><a href="#contact" class="nav-cta">Request Demo</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-grid"></div>
+  <div class="hero-glow"></div>
+
+  <div class="hero-eyebrow">AI Assessment Platform — For Higher Education</div>
+
+  <h1>
+    Grade 300 essays<br />
+    in the time it takes<br />
+    to mark <em>one.</em>
+  </h1>
+
+  <p class="hero-sub">
+    MarkStream uses advanced AI to deliver consistent, rubric-aligned assessment at scale. Built for university professors managing large cohorts — without sacrificing the feedback quality your students deserve.
+  </p>
+
+  <div class="hero-actions">
+    <a href="#contact" class="btn-primary">Start Free Trial</a>
+    <a href="#demo" class="btn-secondary">See a Live Demo</a>
+  </div>
+</section>
+
+<!-- PROBLEM -->
+<section class="problem">
+  <div class="section-label">The Problem</div>
+  <h2>Large classes create an <em>assessment crisis.</em></h2>
+
+  <div class="problem-grid">
+    <div class="problem-cards reveal">
+      <div class="problem-card">
+        <div class="problem-icon">⏱</div>
+        <div>
+          <h4>Time Consumed</h4>
+          <p>Professors with 200+ students spend 50+ hours marking a single assignment cycle — time stolen from research, teaching, and their own wellbeing.</p>
+        </div>
+      </div>
+      <div class="problem-card">
+        <div class="problem-icon">⚖️</div>
+        <div>
+          <h4>Inconsistent Standards</h4>
+          <p>Marking fatigue introduces grade drift — and larger classes demand more teaching assistants, each with their own interpretation of the rubric. The result is a patchwork of standards where a student's grade can depend more on who marked them than how well they performed.</p>
+        </div>
+      </div>
+      <div class="problem-card">
+        <div class="problem-icon">💬</div>
+        <div>
+          <h4>Feedback Quality Suffers</h4>
+          <p>When pressed for time, feedback becomes generic. Students receive terse comments that don't help them understand or improve their work.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="problem-quote reveal reveal-delay-2">
+      <blockquote>
+        "I spent every weekend of semester marking. By Sunday night I was copying the same three comments onto every paper. I knew the quality wasn't there, but I had no other option."
+      </blockquote>
+      <cite>Dr. Priya Nair — Associate Professor, Computer Science, University of Melbourne</cite>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section id="how-it-works">
+  <div class="section-label">Process</div>
+  <h2 class="reveal">From submission to feedback<br />in <em>minutes, not weeks.</em></h2>
+
+  <div class="steps reveal">
+    <div class="step">
+      <div class="step-num">01</div>
+      <h3>Upload Your Assignment and Rubric</h3>
+      <p>Define your assessment criteria in plain language or import your existing rubric. MarkStream understands nuanced academic standards.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">02</div>
+      <h3>Ingest Submissions</h3>
+      <p>Upload student submissions as individual PDFs or bundle them together in a zip file for bulk processing.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">03</div>
+      <h3>AI Marks & Explains</h3>
+      <p>Each submission is assessed against your rubric, given a score, and receives specific, constructive feedback grounded in the student's own writing.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">04</div>
+      <h3>Review & Release</h3>
+      <p>You review flagged or borderline cases and adjust any grades. When ready, export a CSV or Excel file of all grades and download a zip of annotated PDFs with written feedback for each student.</p>
+    </div>
+  </div>
+</section>
+
+<!-- DEMO WINDOW -->
+<section id="demo" class="demo-section">
+  <div class="section-label">Live Demo</div>
+  <h2 class="reveal">See the AI <em>at work.</em></h2>
+
+  <div class="demo-window reveal">
+    <div class="demo-bar">
+      <div class="demo-dot"></div>
+      <div class="demo-dot"></div>
+      <div class="demo-dot"></div>
+      <div class="demo-url">markstream.ai / dashboard / assessment / COMP3001 / Essay-2</div>
+    </div>
+    <div class="demo-body">
+      <div class="demo-submission">
+        <div class="demo-label">Student Submission — #142 of 243</div>
+        <div class="demo-text">
+          The emergence of large language models has fundamentally altered the landscape of natural language processing. Unlike their predecessors, these systems demonstrate emergent capabilities that <span class="demo-highlight">were not explicitly trained for</span>, raising important questions about the nature of intelligence itself. The transformer architecture, first proposed by Vaswani et al. (2017), provides the foundational mechanism through which attention is computed across input sequences...
+        </div>
+      </div>
+      <div class="demo-result">
+        <div class="demo-label">AI Assessment</div>
+        <div class="score-display">
+          <div class="score-big">78</div>
+          <div class="score-meta">/ 100<br /><span style="color:var(--amber); font-size:0.65rem;">Credit</span></div>
+        </div>
+        <div class="rubric-item">
+          <span>Argument & Structure</span>
+          <span class="rubric-score">21/25</span>
+        </div>
+        <div class="rubric-item">
+          <span>Evidence & Citation</span>
+          <span class="rubric-score">19/25</span>
+        </div>
+        <div class="rubric-item">
+          <span>Critical Analysis</span>
+          <span class="rubric-score">22/25</span>
+        </div>
+        <div class="rubric-item">
+          <span>Writing Quality</span>
+          <span class="rubric-score">16/25</span>
+        </div>
+        <div class="feedback-box">
+          <strong style="color:var(--amber); font-size:0.7rem; letter-spacing:0.08em; text-transform:uppercase;">AI Feedback</strong><br /><br />
+          Strong conceptual grasp of transformer architectures and emergent behaviours. The Vaswani citation is well-placed. Writing quality holds you back — several run-on sentences in the opening section reduce clarity. Recommend revising paragraph 2 for concision.<span class="typing-cursor"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section id="features" class="features-bg">
+  <div class="features-intro">
+    <div>
+      <div class="section-label">Features</div>
+      <h2 class="reveal">Every capability a <em>serious educator</em> needs.</h2>
+    </div>
+    <p class="reveal">MarkStream is built with academic rigour at its core — not as an afterthought. Every feature is designed to support professional assessment standards and institutional accountability requirements.</p>
+  </div>
+
+  <div class="feature-grid" style="grid-template-columns: repeat(2, 1fr);">
+    <div class="feature-card reveal">
+      <div class="feature-badge">Accuracy</div>
+      <h3>Rubric-Faithful Scoring</h3>
+      <p>Define criteria in your own words. The AI interprets holistic rubrics, not just keywords — distinguishing a "sophisticated argument" from a merely "relevant one."</p>
+    </div>
+    <div class="feature-card reveal reveal-delay-1">
+      <div class="feature-badge">Transparency</div>
+      <h3>Evidence-Linked Feedback</h3>
+      <p>Every comment is tied to a specific passage in the student's work. No generic phrases — feedback is grounded, specific, and actionable.</p>
+    </div>
+    <div class="feature-card reveal">
+      <div class="feature-badge">Control</div>
+      <h3>Human-in-the-Loop Review</h3>
+      <p>You remain in charge. Review every grade, adjust scores, add personal notes, and export on your own timeline.</p>
+    </div>
+    <div class="feature-card reveal reveal-delay-1">
+      <div class="feature-badge">Consistency</div>
+      <h3>Standardised Assessment at Scale</h3>
+      <p>Every submission is assessed against the same criteria with the same rigour — whether you have 30 students or 300, the standard never drifts.</p>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section id="pricing">
+  <div class="section-label">Pricing</div>
+  <h2 class="reveal">Simple, <em>transparent</em> plans.</h2>
+
+  <div class="pricing-grid">
+    <div class="price-card reveal">
+      <div class="price-tag">Individual</div>
+      <div class="price-name">Pay as You Go</div>
+      <div class="price-amount">$0</div>
+      <div class="price-period">no monthly fee</div>
+      <ul class="price-features">
+        <li>$1 per submission graded</li>
+        <li>Email support</li>
+      </ul>
+      <a href="#" class="btn-secondary" style="width:100%; text-align:center;">Get Started</a>
+    </div>
+
+    <div class="price-card featured reveal reveal-delay-1">
+      <div class="price-tag">Most Popular</div>
+      <div class="price-name">Standard</div>
+      <div class="price-amount">$1,000</div>
+      <div class="price-period">per course</div>
+      <ul class="price-features">
+        <li>$1 per submission graded</li>
+        <li>5 hours callback support per course</li>
+        <li>Unlimited email support</li>
+      </ul>
+      <a href="#" class="btn-primary" style="width:100%; text-align:center;">Get Started</a>
+    </div>
+
+    <div class="price-card reveal reveal-delay-2">
+      <div class="price-tag">Institution</div>
+      <div class="price-name">Enterprise</div>
+      <div class="price-amount">Custom</div>
+      <div class="price-period">contact us for pricing</div>
+      <ul class="price-features">
+        <li>$1 per submission graded</li>
+        <li>Callback support</li>
+        <li>Unlimited email support</li>
+        <li>Single Sign On (SSO)</li>
+        <li>Integration into Learning Management System (LMS)</li>
+      </ul>
+      <a href="#contact" class="btn-secondary" style="width:100%; text-align:center;">Contact Sales</a>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section id="contact" class="cta-section">
+  <div class="section-label" style="justify-content:center; display:flex;">Get Started</div>
+  <h2 class="reveal">Your next marking cycle<br />starts <em>here.</em></h2>
+  <p class="reveal">Join over 340 universities who have reclaimed their time without sacrificing the quality of student feedback.</p>
+  <div class="hero-actions" style="justify-content:center; opacity:1;">
+    <a href="#" class="btn-primary">Request a Free Demo</a>
+    <a href="#" class="btn-secondary">Talk to an Expert</a>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">Mark<span>Stream</span></div>
+  <p>© 2025 MarkStream Technologies. Built for educators, by educators.</p>
+  <p>Privacy · Terms · Contact</p>
+</footer>
+
+<script>
+  // Scroll reveal
+  const reveals = document.querySelectorAll('.reveal');
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) { e.target.classList.add('visible'); io.unobserve(e.target); }
+    });
+  }, { threshold: 0.12 });
+  reveals.forEach(el => io.observe(el));
+
+  // Animate stats on scroll
+  const statNums = document.querySelectorAll('.stat-num');
+  const statIo = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        const el = e.target;
+        const target = el.textContent;
+        el.style.opacity = '0';
+        setTimeout(() => { el.style.transition = 'opacity 0.5s'; el.style.opacity = '1'; }, 200);
+        statIo.unobserve(el);
+      }
+    });
+  }, { threshold: 0.5 });
+  statNums.forEach(el => statIo.observe(el));
+</script>
+</body>
+</html>
